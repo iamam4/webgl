@@ -1,0 +1,15 @@
+
+
+input{
+    cursor: pointer;
+}
+
+
+
+
+canvas {
+    display: flex;
+    margin: auto;
+    outline: none;
+}
+
