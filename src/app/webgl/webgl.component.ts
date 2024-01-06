@@ -44,7 +44,7 @@ export class WebglComponent implements OnInit {
   // Tweakpane
   public PARAMS = {
     colors: '#4e99FF',
-    background: '#86B8DC'
+    background: '#101519'
   };
 
   // Sizes and cursor
@@ -75,7 +75,7 @@ export class WebglComponent implements OnInit {
   private createScene() {
     if (!this.scene) {
       this.scene = new THREE.Scene();
-      this.scene.background = new THREE.Color(0x86B8DC);  
+      this.scene.background = new THREE.Color(0x101519);  
     }
 
 
