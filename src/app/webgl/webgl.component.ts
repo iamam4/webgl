@@ -204,7 +204,7 @@ export class WebglComponent implements OnInit {
     const colors = tab.pages[0].addBinding(this.PARAMS, 'colors', {
       label: 'Couleur',
       picker: 'inline',
-      expanded: true,
+      expanded: false,
 
     });
 
@@ -216,7 +216,7 @@ export class WebglComponent implements OnInit {
     const colorbackground = tab.pages[1].addBinding(this.PARAMS, 'background', {
       label: 'Couleur',
       picker: 'inline',
-      expanded: true,
+      expanded: false,
     });
 
     colorbackground.on('change', () => {
