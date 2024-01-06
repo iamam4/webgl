@@ -1,17 +1,16 @@
-
-
-input{
-    cursor: pointer;
-}
-
-
-
-
 canvas {
     display: flex;
     margin: auto;
     outline: none;
 }
 
-
-
+.container {
+    width: fit-content;
+    min-height: fit-content;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%);
+    color: white;
+}

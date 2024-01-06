@@ -20,7 +20,7 @@ export class WebglComponent implements OnInit {
   private camera!: THREE.PerspectiveCamera;
   private CameraX: number = 0;
   private CameraY: number = 0;
-  private CameraZ: number = 7;
+  private CameraZ: number = 6;
   private CameraFov: number = 75;
   private CameraNear: number = 0.1;
   private CameraFar: number = 1000;
@@ -44,7 +44,8 @@ export class WebglComponent implements OnInit {
   // Tweakpane
   public PARAMS = {
     colors: '#4e99FF',
-    background: '#101519'
+    background: '#11141e',
+    time: '',
   };
 
   // Sizes and cursor
@@ -54,6 +55,7 @@ export class WebglComponent implements OnInit {
   };
   private cursor = { x: 0, y: 0 };
 
+
   // Event listeners for mouse movement and window resize
   @HostListener('document:mousemove', ['$event'])
   onMouseMove(event: any) {
@@ -62,7 +64,7 @@ export class WebglComponent implements OnInit {
   }
 
   @HostListener('window:resize', ['$event'])
-  onResize(event: any) {
+  public onResize(event: any) {
     this.sizes.width = window.innerWidth;
     this.sizes.height = window.innerHeight;
     this.camera.aspect = this.sizes.width / this.sizes.height;
@@ -71,11 +73,14 @@ export class WebglComponent implements OnInit {
     this.renderer?.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   }
 
+
+
+
   // Create the scene
   private createScene() {
     if (!this.scene) {
       this.scene = new THREE.Scene();
-      this.scene.background = new THREE.Color(0x101519);  
+      this.scene.background = new THREE.Color(0x11141e);
     }
 
 
@@ -86,7 +91,7 @@ export class WebglComponent implements OnInit {
       this.dracoLoader.setDecoderPath('../../assets/draco/gltf');
       this.loader.setDRACOLoader(this.dracoLoader);
 
-      this.loader.load('../../assets/gltf/clock2.gltf', (gltf) => {
+      this.loader.load('../../assets/gltf/clock.gltf', (gltf) => {
         if (gltf.scene) {
           this.clock = gltf.scene;
 
@@ -108,9 +113,8 @@ export class WebglComponent implements OnInit {
               child.receiveShadow = true;
             }
           });
-
+          // Enable shadow for the "Sun" light
           this.clock.traverse((child) => {
-            // Directionnal light
             if (child instanceof THREE.DirectionalLight && child.name == "Sun") {
               child.scale.set(0.5, 0.5, 0.5);
               child.castShadow = true;
@@ -160,9 +164,7 @@ export class WebglComponent implements OnInit {
     this.controls = new OrbitControls(this.camera, this.canvas);
     this.controls.enableDamping = true;
 
-    // Disable zoom
-
-    this.controls.minDistance = 5;
+    this.controls.minDistance = 4;
     this.controls.maxDistance = this.CameraZ;
   }
 
@@ -180,27 +182,68 @@ export class WebglComponent implements OnInit {
   // Tweakpane
   private InitTweakpane() {
 
-   
-  
     this.pane = new Pane({
-      title: 'Modifie ton horloge',
-    });
-  
-   const colors = this.pane.addBinding(this.PARAMS, 'colors', {
-      label: 'Color',
+      title: 'SAE 501 / Controleur',
+      expanded: true,
     });
 
-    const colorbackground = this.pane.addBinding(this.PARAMS, 'background', {
-      label: 'Background',
+    // Folder 1
+    const f1 = this.pane.addFolder({
+      title: 'Scene',
+      expanded: true,
+    });
+    // Tab
+    const tab = f1.addTab({
+      pages: [
+        { title: 'Boitier' },
+        { title: 'Arrière Plan' },
+      ],
     });
 
-    colors.on('change',()  => {
+    // Color picker
+    const colors = tab.pages[0].addBinding(this.PARAMS, 'colors', {
+      label: 'Couleur',
+      picker: 'inline',
+      expanded: true,
+
+    });
+
+    colors.on('change', () => {
       this.updateColor();
     });
 
-    colorbackground.on('change',()  => {
+    // Background color picker
+    const colorbackground = tab.pages[1].addBinding(this.PARAMS, 'background', {
+      label: 'Couleur',
+      picker: 'inline',
+      expanded: true,
+    });
+
+    colorbackground.on('change', () => {
       this.scene!.background = new THREE.Color(this.PARAMS.background);
     });
+
+    // Folder 3
+    const f3 = this.pane.addFolder({
+      title: 'Heure',
+      expanded: true,
+    });
+
+    // Time
+    const heure = f3.addBinding(this.PARAMS, 'time', {
+      readonly: true,
+      label: '',
+    });
+
+    heure.on('change', () => {
+      const time = new Date();
+      const hours = ('0' + (time.getHours() % 12)).slice(-2);
+      const minutes = ('0' + time.getMinutes()).slice(-2);
+      const seconds = ('0' + time.getSeconds()).slice(-2);
+      this.PARAMS.time = `${hours}:${minutes}:${seconds}`;
+    });
+
+
 
   }
 
@@ -209,9 +252,8 @@ export class WebglComponent implements OnInit {
   private updateColor() {
     this.clock?.traverse((child) => {
       if (child.name === 'Circle' && child instanceof THREE.Mesh) {
-        // Change the material color of the object
+ 
         if (child.material.name == 'block texture') {
-          // const colorValue = parseInt(this.selectedColor.replace('#', '0x'), 16);
           this.selectedColor = this.PARAMS.colors;
           child.material.color.set(this.selectedColor);
           console.log(this.selectedColor);
@@ -220,24 +262,6 @@ export class WebglComponent implements OnInit {
     });
   }
 
-  // End color picker
-
-  // Wireframe
-  @HostListener('change', ['$event'])
-  public onWireframeChange(event: Event) {
-    const inputElement = event.target as HTMLInputElement;
-
-    if (inputElement.type === 'checkbox') {
-      this.clock?.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-
-          if (child) {
-            child.material.wireframe = inputElement.checked;
-          }
-        }
-      });
-    }
-  }
 
 
   // Animation loop
@@ -254,7 +278,6 @@ export class WebglComponent implements OnInit {
       const hours = time.getHours() % 12;
       const minutes = time.getMinutes();
       const seconds = time.getSeconds();
-
       const rotationHours = (hours + minutes / 60) * (Math.PI / 6);
       const rotationMinutes = minutes * (Math.PI / 30);
       const rotationSeconds = seconds * (Math.PI / 30);
@@ -270,11 +293,11 @@ export class WebglComponent implements OnInit {
           child.rotation.y = - rotationSeconds;
         }
       });
-
     }
     window.requestAnimationFrame(this.animation.bind(this));
   }
 
+  // Initialize the scene
   ngOnInit() {
     this.canvas = this.canvasRef.nativeElement;
     this.createScene();
