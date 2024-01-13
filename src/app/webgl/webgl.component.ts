@@ -275,7 +275,7 @@ export class WebglComponent implements OnInit {
     if (this.clock) {
 
       const time = new Date();
-      const hours = time.getHours() % 24;
+      const hours = time.getHours() % 12;
       const minutes = time.getMinutes();
       const seconds = time.getSeconds();
       const rotationHours = (hours + minutes / 60) * (Math.PI / 6);
